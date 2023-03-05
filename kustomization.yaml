@@ -1,0 +1,69 @@
+---
+namespace: lab
+resources:
+  - sas-bases/base
+  - sas-bases/overlays/network/networking.k8s.io
+  - site-config/security/openssl-generated-ingress-certificate.yaml
+  - sas-bases/overlays/cas-server
+  - sas-bases/overlays/internal-postgres
+  #- site-config/postgres/external-postgres.yaml
+  - sas-bases/overlays/internal-elasticsearch
+  - sas-bases/overlays/crunchydata_pgadmin
+  - sas-bases/overlays/update-checker
+  - sas-bases/overlays/cas-server/auto-resources
+  - site-config/sas-model-publish/kaniko
+  - site-config/sas-microanalytic-score/astores/resources.yaml
+  - site-config/sas-microanalytic-score/archive/resources.yaml
+  - sas-bases/overlays/cas-server/state-transfer
+  # - site-config/cas-shared-newcasserver                                                  # To add a new CAS server
+
+    #- site-config/patches/mas-astore-pvc.yaml
+configurations:
+  - sas-bases/overlays/required/kustomizeconfig.yaml
+transformers: 
+  - sas-bases/overlays/sas-programming-environment/enable-admin-script-access.yaml                                        
+  - sas-bases/overlays/sas-model-publish/kaniko/kaniko-transformer.yaml
+    #- sas-bases/overlays/sas-microanalytic-score/astores/astores-transformer.yaml
+  - sas-bases/overlays/sas-microanalytic-score/archive/archive-transformer.yaml
+  - sas-bases/overlays/internal-elasticsearch/sysctl-transformer.yaml
+  - sas-bases/overlays/internal-postgres/internal-postgres-transformer.yaml
+  - sas-bases/overlays/external-postgres/external-postgres-transformer.yaml
+  - sas-bases/overlays/required/transformers.yaml
+  - sas-bases/overlays/internal-elasticsearch/internal-elasticsearch-transformer.yaml
+  - site-config/cas-manage-workers.yaml
+  - sas-bases/overlays/cas-server/auto-resources/remove-resources.yaml
+  - site-config/patches/sas-nfsshare-mount.yaml           
+  - site-config/patches/cas-nfsshare-mount.yaml       
+  - site-config/patches/batch-nfsshare-mount.yaml    
+  - site-config/mirror.yaml    
+  - sas-bases/overlays/cas-server/state-transfer/support-state-transfer.yaml             # Enable state transfer for the cas-shared-default CAS server - enable and mount new PVC
+
+    #- site-config/patches/cas-enable-host.yaml     
+components:
+  - sas-bases/components/security/core/base/full-stack-tls
+  - sas-bases/components/security/network/networking.k8s.io/ingress/nginx.ingress.kubernetes.io/full-stack-tls
+secretGenerator:
+  - name: sas-image-pull-secrets
+    behavior: replace
+    type: kubernetes.io/dockerconfigjson
+    literals:
+      - '.dockerconfigjson={"auths":{"ewacr.azurecr.io:443":{"username":"ewacr","password":"rT9Q17T9hpWYHGTsSo0pj8+P2AD91kwV","email":"Emlyn.Wang@sas.com","auth":"ZXdhY3I6clQ5UTE3VDlocFdZSEdUc1NvMHBqOCtQMkFEOTFrd1Y="}}}'
+  - name: sas-consul-config
+    behavior: merge
+    files:
+    - SITEDEFAULT_CONF=site-config/self-sitedefault.yaml
+    #- SITEDEFAULT_CONF=site-config/sitedefault.yaml
+patches:
+  - path: site-config/storageclass.yaml
+    target:
+      kind: PersistentVolumeClaim
+      annotationSelector: sas.com/component-name in (sas-backup-job,sas-data-quality-services,sas-commonfiles,sas-cas-operator)
+configMapGenerator:
+  - name: ingress-input
+    behavior: merge
+    literals:
+      - INGRESS_HOST=ewakstmp-rg.eastus2.cloudapp.azure.com
+  - name: sas-shared-config
+    behavior: merge
+    literals:
+      - SAS_SERVICES_URL=https://ewakstmp-rg.eastus2.cloudapp.azure.com:443

@@ -1,0 +1,27 @@
+# To specify an external PostgreSQL instance for your SAS deployment
+apiVersion: webinfdsvr.sas.com/v1
+kind: Pgcluster
+metadata:
+  name: postgres                     # Name of Pgcluster resource
+  annotations:
+    sas.com/default-database: "true"
+spec:
+  internal: false                    # false: sas should use an external PostgreSQL
+  connection:
+    host: ewakstmp-default-pgsql.postgres.database.azure.com               # host name for the entrypoint to the PostgreSQL cluster
+    port: 5432                       # port for the entrypoint to the PostgreSQL cluster
+    ssl: true                       # external cluster requires an SSL connection
+  rolesecret: postgres-user          # name of secret holding credentials
+  database: SharedServices           # database on external cluster SAS should use
+
+---
+# You must define a secret with the role username/password for the database.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-user                # Name of the secret containing external PostgreSQL credentials
+  labels:
+    pg-cluster: postgres
+stringData:
+  username: pgadmin@ewakstmp-default-pgsql               # username key is the name of the role
+  password: LNX_sas_123              # password key is the password for the role
