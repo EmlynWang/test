@@ -1,0 +1,6 @@
+---
+config:
+  application:
+    sas.logon.initial:
+      user: sasboot
+      password: lnxsas

@@ -1,0 +1,12 @@
+---
+apiVersion: builtin
+kind: ConfigMapGenerator
+options:
+  labels:
+    sas.com/tenant: "shared"
+    casoperator.sas.com/tenant: "shared"
+    casoperator.sas.com/instance: "newcasserver"
+metadata:
+  name: sas-cas-config-shared-newcasserver
+literals:
+- CASCLOUDNATIVE=1
