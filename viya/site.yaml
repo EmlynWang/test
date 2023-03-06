@@ -39165,7 +39165,7 @@ spec:
             name: sas-shared-config-f8tcmdk264
         - secretRef:
             name: sas-consul-client
-        image: cr.sas.com/viya-4-x64_oci_linux_2-docker/sas-event-monitor:1.0.6-20221103.1667497245374
+        image: ewacr.azurecr.io:443/viya-4-x64_oci_linux_2-docker/sas-event-monitor:1.0.6-20221103.1667497245374
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -39282,7 +39282,7 @@ spec:
         - -c
         env: []
         envFrom: []
-        image: cr.sas.com/viya-4-x64_oci_linux_2-docker/sas-event-monitor:1.0.6-20221103.1667497245374
+        image: ewacr.azurecr.io:443/viya-4-x64_oci_linux_2-docker/sas-event-monitor:1.0.6-20221103.1667497245374
         imagePullPolicy: IfNotPresent
         name: hydrator
         ports: []
